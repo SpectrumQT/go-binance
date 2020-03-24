@@ -1,4 +1,4 @@
-package binance
+package futures
 
 import (
 	"context"
@@ -13,8 +13,8 @@ type StartUserStreamService struct {
 func (s *StartUserStreamService) Do(ctx context.Context, opts ...RequestOption) (listenKey string, err error) {
 	r := &request{
 		method:   "POST",
-		endpoint: "/api/v3/userDataStream",
-		secType:  secTypeAPIKey,
+		endpoint: "/fapi/v1/listenKey",
+		secType:  secTypeSigned,
 	}
 	data, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {
@@ -44,8 +44,8 @@ func (s *KeepaliveUserStreamService) ListenKey(listenKey string) *KeepaliveUserS
 func (s *KeepaliveUserStreamService) Do(ctx context.Context, opts ...RequestOption) (err error) {
 	r := &request{
 		method:   "PUT",
-		endpoint: "/api/v3/userDataStream",
-		secType:  secTypeAPIKey,
+		endpoint: "/fapi/v1/listenKey",
+		secType:  secTypeSigned,
 	}
 	r.setFormParam("listenKey", s.listenKey)
 	_, err = s.c.callAPI(ctx, r, opts...)
@@ -68,8 +68,8 @@ func (s *CloseUserStreamService) ListenKey(listenKey string) *CloseUserStreamSer
 func (s *CloseUserStreamService) Do(ctx context.Context, opts ...RequestOption) (err error) {
 	r := &request{
 		method:   "DELETE",
-		endpoint: "/api/v3/userDataStream",
-		secType:  secTypeAPIKey,
+		endpoint: "/fapi/v1/listenKey",
+		secType:  secTypeSigned,
 	}
 	r.setFormParam("listenKey", s.listenKey)
 	_, err = s.c.callAPI(ctx, r, opts...)

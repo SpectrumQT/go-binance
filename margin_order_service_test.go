@@ -47,12 +47,14 @@ func (s *marginOrderServiceTestSuite) TestCreateOrder() {
 			"quantity":         quantity,
 			"price":            price,
 			"newClientOrderId": newClientOrderID,
+			"sideEffectType":   SideEffectTypeNoSideEffect,
 		})
 		s.assertRequestEqual(e, r)
 	})
-	res, err := s.client.NewCreateOrderService().Symbol(symbol).Side(side).
+	res, err := s.client.NewCreateMarginOrderService().Symbol(symbol).Side(side).
 		Type(orderType).TimeInForce(timeInForce).Quantity(quantity).
-		Price(price).NewClientOrderID(newClientOrderID).Do(newContext())
+		Price(price).NewClientOrderID(newClientOrderID).SideEffectType(SideEffectTypeNoSideEffect).
+		Do(newContext())
 	s.r().NoError(err)
 	e := &CreateOrderResponse{
 		Symbol:                   "LTCBTC",
@@ -63,10 +65,10 @@ func (s *marginOrderServiceTestSuite) TestCreateOrder() {
 		OrigQuantity:             "12.00",
 		ExecutedQuantity:         "10.00",
 		CummulativeQuoteQuantity: "10.00",
-		Status:      OrderStatusTypeFilled,
-		TimeInForce: TimeInForceTypeGTC,
-		Type:        OrderTypeLimit,
-		Side:        SideTypeBuy,
+		Status:                   OrderStatusTypeFilled,
+		TimeInForce:              TimeInForceTypeGTC,
+		Type:                     OrderTypeLimit,
+		Side:                     SideTypeBuy,
 	}
 	s.assertCreateOrderResponseEqual(e, res)
 }
@@ -132,10 +134,10 @@ func (s *marginOrderServiceTestSuite) TestCreateOrderFull() {
 		OrigQuantity:             "12.00",
 		ExecutedQuantity:         "10.00",
 		CummulativeQuoteQuantity: "10.00",
-		Status:      OrderStatusTypeFilled,
-		TimeInForce: TimeInForceTypeGTC,
-		Type:        OrderTypeLimit,
-		Side:        SideTypeBuy,
+		Status:                   OrderStatusTypeFilled,
+		TimeInForce:              TimeInForceTypeGTC,
+		Type:                     OrderTypeLimit,
+		Side:                     SideTypeBuy,
 		Fills: []*Fill{
 			&Fill{
 				Price:           "0.00002991",
@@ -151,7 +153,7 @@ func (s *marginOrderServiceTestSuite) TestCreateOrderFull() {
 func (s *marginOrderServiceTestSuite) TestCancelOrder() {
 	data := []byte(`{
 		"symbol": "LTCBTC",
-		"orderId": 28,
+		"orderId": "28",
 		"origClientOrderId": "myOrder1",
 		"clientOrderId": "cancelMyOrder1",
 		"transactTime": 1507725176595,
@@ -181,14 +183,14 @@ func (s *marginOrderServiceTestSuite) TestCancelOrder() {
 		s.assertRequestEqual(e, r)
 	})
 
-	res, err := s.client.NewCancelOrderService().Symbol(symbol).
+	res, err := s.client.NewCancelMarginOrderService().Symbol(symbol).
 		OrderID(orderID).OrigClientOrderID(origClientOrderID).
 		NewClientOrderID(newClientOrderID).Do(newContext())
 	r := s.r()
 	r.NoError(err)
-	e := &CancelOrderResponse{
+	e := &CancelMarginOrderResponse{
 		Symbol:                   "LTCBTC",
-		OrderID:                  28,
+		OrderID:                  "28",
 		OrigClientOrderID:        "myOrder1",
 		ClientOrderID:            "cancelMyOrder1",
 		TransactTime:             1507725176595,
@@ -196,12 +198,12 @@ func (s *marginOrderServiceTestSuite) TestCancelOrder() {
 		OrigQuantity:             "10.00000000",
 		ExecutedQuantity:         "8.00000000",
 		CummulativeQuoteQuantity: "8.00000000",
-		Status:      OrderStatusTypeCanceled,
-		TimeInForce: TimeInForceTypeGTC,
-		Type:        OrderTypeLimit,
-		Side:        SideTypeSell,
+		Status:                   OrderStatusTypeCanceled,
+		TimeInForce:              TimeInForceTypeGTC,
+		Type:                     OrderTypeLimit,
+		Side:                     SideTypeSell,
 	}
-	s.assertCancelOrderResponseEqual(e, res)
+	s.assertCancelMarginOrderResponseEqual(e, res)
 }
 
 func (s *marginOrderServiceTestSuite) TestGetOrder() {
@@ -249,15 +251,15 @@ func (s *marginOrderServiceTestSuite) TestGetOrder() {
 		OrigQuantity:             "1.0",
 		ExecutedQuantity:         "0.0",
 		CummulativeQuoteQuantity: "0.0",
-		Status:          OrderStatusTypeNew,
-		TimeInForce:     TimeInForceTypeGTC,
-		Type:            OrderTypeLimit,
-		Side:            SideTypeBuy,
-		StopPrice:       "0.0",
-		IcebergQuantity: "0.0",
-		Time:            1499827319559,
-		UpdateTime:      1499827319559,
-		IsWorking:       true,
+		Status:                   OrderStatusTypeNew,
+		TimeInForce:              TimeInForceTypeGTC,
+		Type:                     OrderTypeLimit,
+		Side:                     SideTypeBuy,
+		StopPrice:                "0.0",
+		IcebergQuantity:          "0.0",
+		Time:                     1499827319559,
+		UpdateTime:               1499827319559,
+		IsWorking:                true,
 	}
 	s.assertOrderEqual(e, order)
 }
@@ -305,18 +307,18 @@ func (s *marginOrderServiceTestSuite) TestListMarginOpenOrders() {
 		OrderID:                  211842552,
 		ClientOrderID:            "qhcZw71gAkCCTv0t0k8LUK",
 		CummulativeQuoteQuantity: "0.00000000",
-		Price:            "0.00475010",
-		OrigQuantity:     "0.30000000",
-		ExecutedQuantity: "0.00000000",
-		Status:           OrderStatusTypeNew,
-		TimeInForce:      TimeInForceTypeGTC,
-		Type:             OrderTypeLimit,
-		Side:             SideTypeSell,
-		StopPrice:        "0.00000000",
-		IcebergQuantity:  "0.00000000",
-		Time:             1562040170089,
-		UpdateTime:       1562040170089,
-		IsWorking:        true,
+		Price:                    "0.00475010",
+		OrigQuantity:             "0.30000000",
+		ExecutedQuantity:         "0.00000000",
+		Status:                   OrderStatusTypeNew,
+		TimeInForce:              TimeInForceTypeGTC,
+		Type:                     OrderTypeLimit,
+		Side:                     SideTypeSell,
+		StopPrice:                "0.00000000",
+		IcebergQuantity:          "0.00000000",
+		Time:                     1562040170089,
+		UpdateTime:               1562040170089,
+		IsWorking:                true,
 	}
 	s.assertOrderEqual(e, orders[0])
 }
@@ -410,4 +412,21 @@ func (s *marginOrderServiceTestSuite) assertMarginAllOrderEqual(e, a *MarginAllO
 	r.Equal(e.QuoteQuantity, a.QuoteQuantity, "QuoteQuantity")
 	r.Equal(e.Symbol, a.Symbol, "Symbol")
 	r.Equal(e.Time, a.Time, "Time")
+}
+
+func (s *baseOrderTestSuite) assertCancelMarginOrderResponseEqual(e, a *CancelMarginOrderResponse) {
+	r := s.r()
+	r.Equal(e.Symbol, a.Symbol, "Symbol")
+	r.Equal(e.OrderID, a.OrderID, "OrderID")
+	r.Equal(e.OrigClientOrderID, a.OrigClientOrderID, "OrigClientOrderID")
+	r.Equal(e.ClientOrderID, a.ClientOrderID, "ClientOrderID")
+	r.Equal(e.TransactTime, a.TransactTime, "TransactTime")
+	r.Equal(e.Price, a.Price, "Price")
+	r.Equal(e.OrigQuantity, a.OrigQuantity, "OrigQuantity")
+	r.Equal(e.ExecutedQuantity, a.ExecutedQuantity, "ExecutedQuantity")
+	r.Equal(e.CummulativeQuoteQuantity, a.CummulativeQuoteQuantity, "CummulativeQuoteQuantity")
+	r.Equal(e.Status, a.Status, "Status")
+	r.Equal(e.TimeInForce, a.TimeInForce, "TimeInForce")
+	r.Equal(e.Type, a.Type, "Type")
+	r.Equal(e.Side, a.Side, "Side")
 }

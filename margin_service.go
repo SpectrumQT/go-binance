@@ -471,6 +471,41 @@ type MarginPair struct {
 	IsSellAllowed bool   `json:"isSellAllowed"`
 }
 
+// GetMarginAllPairsService get margin pair info
+type GetMarginAllPairsService struct {
+	c *Client
+}
+
+// Do send request
+func (s *GetMarginAllPairsService) Do(ctx context.Context, opts ...RequestOption) (res []*MarginAllPair, err error) {
+	r := &request{
+		method:   "GET",
+		endpoint: "/sapi/v1/margin/allPairs",
+		secType:  secTypeAPIKey,
+	}
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return []*MarginAllPair{}, err
+	}
+	res = make([]*MarginAllPair, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return []*MarginAllPair{}, err
+	}
+	return res, nil
+}
+
+// MarginAllPair define margin pair info
+type MarginAllPair struct {
+	ID            int64  `json:"id"`
+	Symbol        string `json:"symbol"`
+	Base          string `json:"base"`
+	Quote         string `json:"quote"`
+	IsMarginTrade bool   `json:"isMarginTrade"`
+	IsBuyAllowed  bool   `json:"isBuyAllowed"`
+	IsSellAllowed bool   `json:"isSellAllowed"`
+}
+
 // GetMarginPriceIndexService get margin price index
 type GetMarginPriceIndexService struct {
 	c      *Client
@@ -617,4 +652,113 @@ func (s *GetMaxBorrowableService) Do(ctx context.Context, opts ...RequestOption)
 // MaxBorrowable define max borrowable response
 type MaxBorrowable struct {
 	Amount string `json:"amount"`
+}
+
+// GetMaxTransferableService get max transferable of asset
+type GetMaxTransferableService struct {
+	c     *Client
+	asset string
+}
+
+// Asset set asset
+func (s *GetMaxTransferableService) Asset(asset string) *GetMaxTransferableService {
+	s.asset = asset
+	return s
+}
+
+// Do send request
+func (s *GetMaxTransferableService) Do(ctx context.Context, opts ...RequestOption) (res *MaxTransferable, err error) {
+	r := &request{
+		method:   "GET",
+		endpoint: "/sapi/v1/margin/maxTransferable",
+		secType:  secTypeSigned,
+	}
+	r.setParam("asset", s.asset)
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = new(MaxTransferable)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+// MaxTransferable define max transferable response
+type MaxTransferable struct {
+	Amount string `json:"amount"`
+}
+
+// StartMarginUserStreamService create listen key for margin user stream service
+type StartMarginUserStreamService struct {
+	c *Client
+}
+
+// Do send request
+func (s *StartMarginUserStreamService) Do(ctx context.Context, opts ...RequestOption) (listenKey string, err error) {
+	r := &request{
+		method:   "POST",
+		endpoint: "/sapi/v1/userDataStream",
+		secType:  secTypeAPIKey,
+	}
+	data, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return "", err
+	}
+	j, err := newJSON(data)
+	if err != nil {
+		return "", err
+	}
+	listenKey = j.Get("listenKey").MustString()
+	return listenKey, nil
+}
+
+// KeepaliveMarginUserStreamService update listen key
+type KeepaliveMarginUserStreamService struct {
+	c         *Client
+	listenKey string
+}
+
+// ListenKey set listen key
+func (s *KeepaliveMarginUserStreamService) ListenKey(listenKey string) *KeepaliveMarginUserStreamService {
+	s.listenKey = listenKey
+	return s
+}
+
+// Do send request
+func (s *KeepaliveMarginUserStreamService) Do(ctx context.Context, opts ...RequestOption) (err error) {
+	r := &request{
+		method:   "PUT",
+		endpoint: "/sapi/v1/userDataStream",
+		secType:  secTypeAPIKey,
+	}
+	r.setFormParam("listenKey", s.listenKey)
+	_, err = s.c.callAPI(ctx, r, opts...)
+	return err
+}
+
+// CloseMarginUserStreamService delete listen key
+type CloseMarginUserStreamService struct {
+	c         *Client
+	listenKey string
+}
+
+// ListenKey set listen key
+func (s *CloseMarginUserStreamService) ListenKey(listenKey string) *CloseMarginUserStreamService {
+	s.listenKey = listenKey
+	return s
+}
+
+// Do send request
+func (s *CloseMarginUserStreamService) Do(ctx context.Context, opts ...RequestOption) (err error) {
+	r := &request{
+		method:   "DELETE",
+		endpoint: "/sapi/v1/userDataStream",
+		secType:  secTypeAPIKey,
+	}
+	r.setFormParam("listenKey", s.listenKey)
+	_, err = s.c.callAPI(ctx, r, opts...)
+	return err
 }
