@@ -23,18 +23,25 @@ Name | Description | Status
 [wapi-api.md](https://github.com/binance-exchange/binance-official-api-docs/blob/master/wapi-api.md) | Details on the Withdrawal API (/wapi) | <input type="checkbox" checked>  Partially Implemented
 [margin-api.md](https://github.com/binance-exchange/binance-official-api-docs/blob/master/margin-api.md) | Details on the Margin API (/sapi) | <input type="checkbox" checked>  Implemented
 [futures-api.md](https://binance-docs.github.io/apidocs/futures/en/#general-info) | Details on the Futures API (/fapi) | <input type="checkbox" checked>  Partially Implemented
+[delivery-api.md](https://binance-docs.github.io/apidocs/delivery/en/#general-info) | Details on the Coin-M Futures API (/dapi) | <input type="checkbox" checked>  Partially Implemented
 
 ### Installation
 
 ```shell
-go get github.com/adshao/go-binance
+go get github.com/adshao/go-binance/v2
+```
+
+For v1 API, it has been moved to `v1` branch, please use:
+
+```shell
+go get github.com/adshao/go-binance/v1
 ```
 
 ### Importing
 
 ```golang
 import (
-    "github.com/adshao/go-binance"
+    "github.com/adshao/go-binance/v2"
 )
 ```
 
@@ -54,7 +61,8 @@ var (
     secretKey = "your secret key"
 )
 client := binance.NewClient(apiKey, secretKey)
-futuresClient := binance.NewFuturesClient(apiKey, secretKey)
+futuresClient := binance.NewFuturesClient(apiKey, secretKey)    // USDT-M Futures
+deliveryClient := binance.NewDeliveryClient(apiKey, secretKey)  // Coin-M Futures
 ```
 
 A service instance stands for a REST API endpoint and is initialized by client.NewXXXService function.
@@ -210,6 +218,8 @@ fmt.Println(res)
 
 You don't need Client in websocket API. Just call binance.WsXxxServe(args, handler, errHandler).
 
+> For delivery API you can use `delivery.WsXxxServe(args, handler, errHandler)`.
+
 #### Depth
 
 ```golang
@@ -298,3 +308,51 @@ Or you can also overwrite the `TimeOffset` yourself:
 ```golang
 client.TimeOffset = 123
 ```
+
+### Testnet
+
+You can use the testnet by enabling the corresponding flag.
+
+> Note that you can't use your regular API and Secret keys for the testnet. You have to create an account on
+> the testnet websites : [https://testnet.binancefuture.com/](https://testnet.binancefuture.com/) for futures and delivery
+> or [https://testnet.binance.vision/](https://testnet.binance.vision/) for the Spot Test Network.
+
+#### Spot
+
+Use the `binance.UseTestnet` flag before calling the client creation and the websockets methods.
+
+```go
+import (
+    "github.com/adshao/go-binance/v2"
+)
+
+binance.UseTestnet = true
+client := binance.NewClient(apiKey, secretKey)
+```
+
+#### Futures (usd(s)-m futures)
+
+Use the `futures.UseTestnet` flag before calling the client creation and the websockets methods
+
+```go
+import (
+    "github.com/adshao/go-binance/v2/futures"
+)
+
+futures.UseTestnet = true
+BinanceClient = futures.NewClient(ApiKey, SecretKey)
+```
+
+#### Delivery (coin-m futures)
+
+Use the `delivery.UseTestnet` flag before calling the client creation and the websockets methods
+
+```go
+import (
+    "github.com/adshao/go-binance/v2/delivery"
+)
+
+delivery.UseTestnet = true
+BinanceClient = delivery.NewClient(ApiKey, SecretKey)
+```
+
